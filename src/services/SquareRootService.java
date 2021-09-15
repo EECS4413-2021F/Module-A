@@ -71,24 +71,26 @@ import java.util.Scanner;
 
 public class SquareRootService extends Thread
 {
-  public static PrintStream log = System.out;
+  public static PrintStream Log = System.out;
 
   private Socket client;
 
-  public SquareRootService(Socket client)
+  private SquareRootService(Socket client)
   {
     this.client = client;
   }
 
   public void run()
   {
-    log.printf("Connected to %s:%d\n", client.getInetAddress(), client.getPort());
+    Log.printf("Connected to %s:%d\n", client.getInetAddress(), client.getPort());
 
-    try (Scanner     in  = new Scanner(client.getInputStream());
-         PrintStream out = new PrintStream(client.getOutputStream(), true)) {
-
+    try (
+      Socket  _client = this.client; // Makes sure that client is closed at end of try-statement. 
+      Scanner     req = new Scanner(client.getInputStream());
+      PrintStream res = new PrintStream(client.getOutputStream(), true);
+    ) {
       String response;
-      String request = in.nextLine();
+      String request = req.nextLine();
 
       double root;
 
@@ -98,17 +100,11 @@ public class SquareRootService extends Thread
       } else {
         response = "Don't understand: " + request;
       }
-
-      out.println(response);
+      res.println(response);
     } catch (Exception e) {
-      log.println(e);
+      Log.println(e);
     } finally {
-      try {
-        client.close();
-        log.printf("Disconnected from %s:%d\n", client.getInetAddress(), client.getPort());
-      } catch (Exception e) {
-        log.println(e);
-      }
+      Log.printf("Disconnected from %s:%d\n", client.getInetAddress(), client.getPort());
     }
   }
 
@@ -119,7 +115,7 @@ public class SquareRootService extends Thread
     InetAddress host = InetAddress.getLocalHost(); // .getLoopbackAddress();
 
     try (ServerSocket server = new ServerSocket(port, 0, host)) {
-      log.printf("Server listening on %s:%d\n", server.getInetAddress(), server.getLocalPort());
+      Log.printf("Server listening on %s:%d\n", server.getInetAddress(), server.getLocalPort());
 
       while (true) {
         Socket client = server.accept();
