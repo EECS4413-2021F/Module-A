@@ -81,7 +81,7 @@ public class SquareRootService extends Thread {
     Log.printf("Connected to %s:%d\n", client.getInetAddress(), client.getPort());
 
     try (
-      Socket  _client = this.client; // Makes sure that client is closed at end of try-statement. 
+      Socket   client = this.client; // Makes sure that client is closed at end of try-statement. 
       Scanner     req = new Scanner(client.getInputStream());
       PrintStream res = new PrintStream(client.getOutputStream(), true);
     ) {
