@@ -45,13 +45,6 @@ import java.io.PrintStream;
 
 public class TCPClient {
   public static PrintStream Log = System.out;
-
-  private static final String[] ErrorMessage = {
-    "ERROR: Not enough arguments. Usage: <host> <port>. Expected 2 args, got %d\n",
-    "ERROR: Fail to parse host as an IP address or hostname, given '%s'.\n",
-    "ERROR: Fail to parse port as an integer, given '%s'.\n",
-    "ERROR: Port number out of range, expected integer between 0 and 65536, given %d.\n",
-  };
  
   private static boolean isHostAddress(String address) {
     if (address.isEmpty()) {
@@ -83,13 +76,20 @@ public class TCPClient {
   }
 
   private static void validateArgs(String[] args) {
-    if (args.length < 2)         abort(1, String.format(ErrorMessage[0], args.length));
-    if (!isHostAddress(args[0])) abort(2, String.format(ErrorMessage[1], args[0]));
-    if (!isInteger(args[1], 10)) abort(3, String.format(ErrorMessage[2], args[1]));
+    String[] messages = {
+      "ERROR: Not enough arguments. Usage: <host> <port>. Expected 2 args, got %d\n",
+      "ERROR: Fail to parse host as an IP address or hostname, given '%s'.\n",
+      "ERROR: Fail to parse port as an integer, given '%s'.\n",
+      "ERROR: Port number out of range, expected integer between 0 and 65536, given %d.\n",
+    };
+
+    if (args.length < 2)         abort(1, String.format(messages[0], args.length));
+    if (!isHostAddress(args[0])) abort(2, String.format(messages[1], args[0]));
+    if (!isInteger(args[1], 10)) abort(3, String.format(messages[2], args[1]));
 
     int port = Integer.parseInt(args[1]);
     if (!inPortRange(port)) {
-      abort(4, String.format(ErrorMessage[3], port));
+      abort(4, String.format(messages[3], port));
     }
     return;
   }
