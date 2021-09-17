@@ -69,19 +69,15 @@ import java.util.Scanner;
  *
  */
 
-public class SquareRootService extends Thread
-{
+public class SquareRootService extends Thread {
   public static PrintStream Log = System.out;
 
   private Socket client;
-
-  private SquareRootService(Socket client)
-  {
+  private SquareRootService(Socket client) {
     this.client = client;
   }
 
-  public void run()
-  {
+  public void run() {
     Log.printf("Connected to %s:%d\n", client.getInetAddress(), client.getPort());
 
     try (
@@ -108,15 +104,11 @@ public class SquareRootService extends Thread
     }
   }
 
-  public static void main(String[] args) throws Exception
-  {
+  public static void main(String[] args) throws Exception {
     int port = 0;
-
     InetAddress host = InetAddress.getLocalHost(); // .getLoopbackAddress();
-
     try (ServerSocket server = new ServerSocket(port, 0, host)) {
       Log.printf("Server listening on %s:%d\n", server.getInetAddress(), server.getLocalPort());
-
       while (true) {
         Socket client = server.accept();
 
