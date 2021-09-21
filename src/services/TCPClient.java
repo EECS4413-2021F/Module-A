@@ -44,8 +44,8 @@ import java.io.PrintStream;
  */
 
 public class TCPClient {
-  public static PrintStream Log = System.out;
- 
+  private static PrintStream log = System.out;
+
   private static boolean isHostAddress(String address) {
     if (address.isEmpty()) {
       return false;
@@ -58,20 +58,21 @@ public class TCPClient {
     }
   }
 
+  private static boolean isInteger(String integer) { return isInteger(integer, 10); }
   private static boolean isInteger(String integer, int radix) {
     try (Scanner sc = new Scanner(integer.trim())) {
       if(!sc.hasNextInt(radix)) return false;
       sc.nextInt(radix);
       return !sc.hasNext();
     }
-  } 
+  }
 
   private static boolean inPortRange(int port) {
     return 0 <= port && port < 65536;
   }
 
   private static void abort(int exitCode, String message) {
-    Log.println(message);
+    log.println(message);
     System.exit(exitCode);
   }
 
@@ -85,7 +86,7 @@ public class TCPClient {
 
     if (args.length < 2)         abort(1, String.format(messages[0], args.length));
     if (!isHostAddress(args[0])) abort(2, String.format(messages[1], args[0]));
-    if (!isInteger(args[1], 10)) abort(3, String.format(messages[2], args[1]));
+    if (!isInteger(args[1]))     abort(3, String.format(messages[2], args[1]));
 
     int port = Integer.parseInt(args[1]);
     if (!inPortRange(port)) {
@@ -103,17 +104,17 @@ public class TCPClient {
       Scanner res     = new Scanner(client.getInputStream());
       Scanner in      = new Scanner(System.in);
     ) {
-      Log.printf("Connected to server %s:%d\n", client.getInetAddress(), client.getPort());
-      Log.print("Enter your request, then press <Enter>: ");
+      log.printf("Connected to server %s:%d\n", client.getInetAddress(), client.getPort());
+      log.print("Enter your request, then press <Enter>: ");
       String request = in.nextLine();
       req.println(request);
       String response = res.nextLine();
-      Log.print("The response is: ");
-      Log.println(response);
+      log.print("The response is: ");
+      log.println(response);
     } catch (Exception e) {
-      Log.println(e);
+      log.println(e);
     } finally {
-      Log.println("Client connection closed.");
+      log.println("Client connection closed.");
     }
   }
 }

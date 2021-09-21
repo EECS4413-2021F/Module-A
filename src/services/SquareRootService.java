@@ -70,7 +70,7 @@ import java.util.Scanner;
  */
 
 public class SquareRootService extends Thread {
-  public static PrintStream Log = System.out;
+  private static PrintStream log = System.out;
 
   private Socket client;
   private SquareRootService(Socket client) {
@@ -78,11 +78,11 @@ public class SquareRootService extends Thread {
   }
 
   public void run() {
-    Log.printf("Connected to %s:%d\n", client.getInetAddress(), client.getPort());
+    log.printf("Connected to %s:%d\n", client.getInetAddress(), client.getPort());
 
     try (
-      Socket   client = this.client; // Makes sure that client is closed at end of try-statement. 
-      Scanner     req = new Scanner(client.getInputStream());
+      Socket client   = this.client; // Makes sure that client is closed at end of try-statement.
+      Scanner req     = new Scanner(client.getInputStream());
       PrintStream res = new PrintStream(client.getOutputStream(), true);
     ) {
       String response;
@@ -98,9 +98,9 @@ public class SquareRootService extends Thread {
       }
       res.println(response);
     } catch (Exception e) {
-      Log.println(e);
+      log.println(e);
     } finally {
-      Log.printf("Disconnected from %s:%d\n", client.getInetAddress(), client.getPort());
+      log.printf("Disconnected from %s:%d\n", client.getInetAddress(), client.getPort());
     }
   }
 
@@ -108,7 +108,7 @@ public class SquareRootService extends Thread {
     int port = 0;
     InetAddress host = InetAddress.getLocalHost(); // .getLoopbackAddress();
     try (ServerSocket server = new ServerSocket(port, 0, host)) {
-      Log.printf("Server listening on %s:%d\n", server.getInetAddress(), server.getLocalPort());
+      log.printf("Server listening on %s:%d\n", server.getInetAddress(), server.getLocalPort());
       while (true) {
         Socket client = server.accept();
 
