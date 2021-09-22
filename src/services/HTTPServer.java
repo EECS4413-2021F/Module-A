@@ -4,9 +4,11 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
@@ -14,7 +16,7 @@ import com.google.gson.Gson;
 
 public class HTTPServer extends Thread {
   private static PrintStream log = System.out;
-  private static final Map<String, Integer> httpResponseCodes = new HashMap<>();
+  private static final Map<Integer, String> httpResponseCodes = new HashMap<>();
 
   static {
     httpResponseCodes.put(100, "HTTP CONTINUE");
@@ -74,31 +76,35 @@ public class HTTPServer extends Thread {
   private String getQueryStrings(String qs) {
     Map<String, String> queries = new HashMap<>();
     String[] fields = qs.split("&");
+
     for (String field : fields) {
       String[] pairs = field.split("=");
       if (pairs.length == 2) {
         queries.put(pairs[0], pairs[1]);
       }
     }
+
     Gson gson = new Gson();
     return gson.toJson(queries);
   }
 
-  private String getHeaders(String headers) {
-    String keyvalue;
+  private String getHeaders(List<String> headerLines) {
+    String[] keyvalue;
     HashMap<String, String> headers = new HashMap<String, String>();
-    while (String header : headers.split("\n")) {
+
+    for (String header : headerLines) {
       keyvalue = header.split(":");
       headers.put(keyvalue[0], keyvalue[1].trim());
     }
+
     Gson gson = new Gson();
-    return gson.toJson(header);
+    return gson.toJson(headers);
   }
 
   public void run() {
     final String clientAddress = String.format("%s:%d", client.getInetAddress(), client.getPort());
     log.printf("Connected to %s\n", clientAddress);
-
+    
     try (
       Socket client   = this.client; // Makes sure that client is closed at end of try-statement.
       Scanner req     = new Scanner(client.getInputStream());
@@ -113,44 +119,58 @@ public class HTTPServer extends Thread {
       String response    = "";
       String contentType = "text/plain";
 
-      // we support only GET and HEAD methods, we check
-      if (!method.equals("GET")  &&  !method.equals("HEAD")) {
-        status = 501;
-      } else {
-        status = 200;
-
-        if (endpoint.equals("/")) {
-          response = "Hello! Welcome to this Server.";
-        } else if (endpoint.equals("/gettime")) {
-          response = (new Date()).toString();
-        } else if (endpoint.startsWith("/qs?")) {
-          String qs   = endpoint.substring(endpoint.indexOf('?') + 1); // The query string
-          endpoint    = endpoint.substring(0, endpoint.indexOf('?'));
-          contentType = "application/json";
-          response    = getQueryStrings(qs);
-        } else if (endpoint.equals("/headers")) {
-          // Read the request headers
-          String buff;
-          String headers = "";
-          while (in.hasNextLine()) {
-            buff = in.nextLine();
-            if (buff.isEmpty()) break;
-            headers += buff;
-          }
-
-          contentType = "application/json";
-          response    = getHeaders(headers);
+      try {
+        // we support only GET and HEAD methods, we check
+        if (!method.equals("GET") && !method.equals("HEAD")) {
+          status = 501;
         } else {
-          status = 404;
+          status = 200;
+  
+          if (endpoint.equals("/")) {
+            response = "Hello! Welcome to this Server.";
+  
+          } else if (endpoint.equals("/gettime")) {
+            response = (new Date()).toString();
+  
+          } else if (endpoint.startsWith("/qs?")) {
+            String qs   = endpoint.substring(endpoint.indexOf('?') + 1); // The query string
+            endpoint    = endpoint.substring(0, endpoint.indexOf('?'));
+            contentType = "application/json";
+            response    = getQueryStrings(qs);
+  
+          } else if (endpoint.equals("/headers")) {
+            // Read the request headers
+            String buff;
+            List<String> headers = new ArrayList<>();
+
+            while (req.hasNextLine()) {
+              buff = req.nextLine();
+              if (buff.isEmpty()) break;
+              headers.add(buff);
+            }
+  
+            contentType = "application/json";
+            response    = getHeaders(headers);
+  
+          } else {
+            status = 404;
+          }
         }
+      } catch (Exception e) {
+        status = 500;
       }
+
+      if (status != 200) {
+        response = httpResponseCodes.get(status);
+      }
+
       log.printf("%s: %d - %s\n", clientAddress, status, request);
-      sendHeader(res, status, contentType, response);
-      if (status == 200) {
+      sendHeaders(res, status, contentType, response);
+
+      if (method.equals("GET")) {
         res.println(response);
-      } else {
-        res.println(httpResponseCodes.get(status));
       }
+
       res.flush(); // flush character output stream buffer
     } catch (Exception e) {
       log.println(e);

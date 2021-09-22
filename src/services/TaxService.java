@@ -108,7 +108,7 @@ public class TaxService extends Thread {
         return "Unrecognized format: " + format;
       }
     } catch (SQLException e) {
-      log.println(e)
+      log.println(e);
       return "SQL Error: " + e.getMessage();
     } finally {
       log.println("Disconnected from database.");
