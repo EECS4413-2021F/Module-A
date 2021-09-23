@@ -38,7 +38,7 @@ public class ToJSONExample {
         statement.setDouble(1, pst);
 
         try (ResultSet rs = statement.executeQuery()) {
-          List<TaxBean> taxes      = new ArrayList<>();
+          List<TaxBean> list       = new ArrayList<>();
           TaxCollection collection = new TaxCollection();
 
           while (rs.next()) {
@@ -48,10 +48,10 @@ public class ToJSONExample {
             bean.setType(rs.getString("type"));
             bean.setGst(rs.getDouble("gst"));
             bean.setPst(rs.getDouble("pst"));
-            taxes.add(bean);
+            list.add(bean);
           }
 
-          collection.setTaxes(taxes);
+          collection.setTaxes(list);
 
           Gson gson = new Gson();
           log.println(gson.toJson(collection));

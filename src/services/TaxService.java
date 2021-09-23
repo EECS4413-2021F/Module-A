@@ -46,11 +46,14 @@ public class TaxService extends Thread {
 
       if (where.equals("code_eq")) {
         String query = "SELECT * FROM Tax WHERE code = ?";
+
         if (!search.matches("^[A-Z]{2}$")) {
           return "Invalid search value. Expected two letter province code, got: " + search;
         }
+
         try (PreparedStatement statement = connection.prepareStatement(query)) {
           statement.setString(1, search);
+
           try (ResultSet rs = statement.executeQuery()) {
             TaxBean bean = new TaxBean();
             while (rs.next()) {
@@ -65,14 +68,18 @@ public class TaxService extends Thread {
         }
       } else if (where.equals("pst_gt")) {
         String query = "SELECT * FROM Tax WHERE pst > ?";
+
         if (!search.matches("^[0-9]+(\\.[0-9]+)?$")) {
           return "Invalid search value. Expected percent value, got: " + search;
         }
+
         try (PreparedStatement statement = connection.prepareStatement(query)) {
           statement.setDouble(1, Double.parseDouble(search));
+
           try (ResultSet rs = statement.executeQuery()) {
-            List<TaxBean> taxes      = new ArrayList<>();
+            List<TaxBean> list       = new ArrayList<>();
             TaxCollection collection = new TaxCollection();
+
             while (rs.next()) {
               TaxBean bean = new TaxBean();
               bean.setName(rs.getString("province"));
@@ -80,9 +87,9 @@ public class TaxService extends Thread {
               bean.setType(rs.getString("type"));
               bean.setGst(rs.getDouble("gst"));
               bean.setPst(rs.getDouble("pst"));
-              taxes.add(bean);
+              list.add(bean);
             }
-            collection.setTaxes(taxes);
+            collection.setTaxes(list);
             responseObject = collection;
           }
         }

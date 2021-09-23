@@ -108,6 +108,7 @@ public class TCPClient {
       log.print("Enter your request, then press <Enter>: ");
       String request = in.nextLine();
       req.println(request);
+
       String response = res.nextLine();
       log.print("The response is: ");
       log.println(response);

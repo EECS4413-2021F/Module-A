@@ -40,7 +40,7 @@ public class ToXMLCollectionExample {
         statement.setDouble(1, pst);
 
         try (ResultSet rs = statement.executeQuery()) {
-          List<TaxBean> taxes      = new ArrayList<>();
+          List<TaxBean> list       = new ArrayList<>();
           TaxCollection collection = new TaxCollection();
 
           while (rs.next()) {
@@ -50,10 +50,10 @@ public class ToXMLCollectionExample {
             bean.setType(rs.getString("type"));
             bean.setGst(rs.getDouble("gst"));
             bean.setPst(rs.getDouble("pst"));
-            taxes.add(bean);
+            list.add(bean);
           }
 
-          collection.setTaxes(taxes);
+          collection.setTaxes(list);
 
           try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             JAXBContext context = JAXBContext.newInstance(TaxCollection.class);

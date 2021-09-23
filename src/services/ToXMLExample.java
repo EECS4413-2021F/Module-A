@@ -54,7 +54,7 @@ public class ToXMLExample {
             m.marshal(bean, baos);
             log.println(baos);
           } catch (Exception e) {
-          log.println(e);
+            log.println(e);
           }
         }
       }
