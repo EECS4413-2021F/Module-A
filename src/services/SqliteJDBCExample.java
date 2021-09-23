@@ -10,6 +10,28 @@ import java.sql.ResultSet;
 import services.model.TaxBean;
 
 
+/**
+ * A database access example for connecting and retrieving records
+ * from a SQLite database. Returns a single province Tax record
+ * that matches the given 2-letter province code and prints it.
+ *
+ * Usage from command-line:
+ * 
+ *    java SqliteJDBCExample <code>
+ *
+ * Example:
+ * 
+ *    $ java SqliteJDBCExample ON
+ *    Connected to database: jdbc:sqlite:/cs/home/vwchu/4413/pkg/sqlite/Models_R_US.db
+ *    Taxes in Ontario (ON):
+ *    - Type = HST
+ *    - GST  = 5.00%
+ *    - PST  = 8.00%
+ *
+ *    Disconnected from database.
+ * 
+ */
+
 public class SqliteJDBCExample {
   private static PrintStream log = System.out;
   public static void main(String[] args) {

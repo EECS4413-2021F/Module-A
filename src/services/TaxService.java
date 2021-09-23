@@ -23,6 +23,93 @@ import services.model.TaxBean;
 import services.model.TaxCollection;
 
 
+/**
+ * An example microservice for retrieve the Tax information
+ * from the Tax table in the database based on the requested
+ * information.
+ * 
+ * This service takes 2 request types: 'code_eq' and 'pst_gt'.
+ * When 'code_eq', the service takes a two letter province code and
+ * returns a single Tax record. When 'pst_gt', it takes a double, and
+ * returns a list of Tax records, all of which have PST greater than the
+ * given number. A third parameter specifies the response format,
+ * either 'xml' or 'json'.
+ * 
+ * Usage from telnet, send:
+ * 
+ *  - code_eq <code> xml
+ *  - code_eq <code> json
+ *  - pst_gt <number> xml
+ *  - pst_gt <number> json
+ *
+ * Examples:
+ *
+ *    $ telnet 130.63.96.85 44760
+ *      > code_eq ON xml
+ *      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+ *      <tax>
+ *        <code>ON</code>
+ *        <gst>5.0</gst>
+ *        <name>Ontario</name>
+ *        <pst>8.0</pst>
+ *        <type>HST</type>
+ *      </tax>
+ * 
+ *    $ telnet 130.63.96.85 44760
+ *      > code_eq ON json
+ *      {"name":"Ontario","code":"ON","type":"HST","pst":8.0,"gst":5.0}
+ * 
+ *    $ telnet 130.63.96.85 44760
+ *      > pst_gt 9.0 xml
+ *      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+ *      <taxes>
+ *          <tax>
+ *              <code>NB</code>
+ *              <gst>5.0</gst>
+ *              <name>New-Brunswick</name>
+ *              <pst>10.0</pst>
+ *              <type>HST</type>
+ *          </tax>
+ *          <tax>
+ *              <code>NL</code>
+ *              <gst>5.0</gst>
+ *              <name>Newfoundland and Labrador</name>
+ *              <pst>10.0</pst>
+ *              <type>HST</type>
+ *          </tax>
+ *          <tax>
+ *              <code>NS</code>
+ *              <gst>5.0</gst>
+ *              <name>Nova Scotia</name>
+ *              <pst>10.0</pst>
+ *              <type>HST</type>
+ *          </tax>
+ *          <tax>
+ *              <code>PE</code>
+ *              <gst>5.0</gst>
+ *              <name>Prince Edward Island</name>
+ *              <pst>10.0</pst>
+ *              <type>HST</type>
+ *          </tax>
+ *          <tax>
+ *              <code>QC</code>
+ *              <gst>5.0</gst>
+ *              <name>Québec</name>
+ *              <pst>9.975000000000001</pst>
+ *              <type>QST+GST</type>
+ *          </tax>
+ *      </taxes>
+ * 
+ *    $ telnet 130.63.96.85 44760
+ *      > pst_gt 9.0 json
+ *      {"taxes":[{"name":"New-Brunswick","code":"NB","type":"HST","pst":10.0,"gst":5.0},
+ *      {"name":"Newfoundland and Labrador","code":"NL","type":"HST","pst":10.0,"gst":5.0},
+ *      {"name":"Nova Scotia","code":"NS","type":"HST","pst":10.0,"gst":5.0},
+ *      {"name":"Prince Edward Island","code":"PE","type":"HST","pst":10.0,"gst":5.0},
+ *      {"name":"Québec","code":"QC","type":"QST+GST","pst":9.975000000000001,"gst":5.0}]}
+ *
+ */
+
 public class TaxService extends Thread {
   private static PrintStream log = System.out;
 
@@ -115,7 +202,7 @@ public class TaxService extends Thread {
         return "Unrecognized format: " + format;
       }
     } catch (SQLException e) {
-      log.println(e)
+      log.println(e);
       return "SQL Error: " + e.getMessage();
     } finally {
       log.println("Disconnected from database.");

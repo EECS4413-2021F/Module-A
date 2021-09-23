@@ -6,6 +6,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "tax")
 public class TaxBean implements Serializable {
 
+  private static final long serialVersionUID = 1L;
+
   private String name;
   private String code;
   private String type;
