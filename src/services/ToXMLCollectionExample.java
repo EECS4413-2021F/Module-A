@@ -17,6 +17,62 @@ import services.model.TaxBean;
 import services.model.TaxCollection;
 
 
+/**
+ * An example for serializing the retrieved database
+ * records as a XML document. Returns a list of the provinces
+ * that have PST greater than the given number.
+ * 
+ * Usage from command-line:
+ * 
+ *    java ToXMLCollectionExample <pst>
+ *
+ * Example:
+ * 
+ *    $ java ToXMLCollectionExample 9.0
+ *    Connected to database: jdbc:sqlite:/cs/home/vwchu/4413/pkg/sqlite/Models_R_US.db
+ *    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+ *    <taxes>
+ *      <tax>
+ *        <code>NB</code>
+ *        <gst>5.0</gst>
+ *        <name>New-Brunswick</name>
+ *        <pst>10.0</pst>
+ *        <type>HST</type>
+ *      </tax>
+ *      <tax>
+ *        <code>NL</code>
+ *        <gst>5.0</gst>
+ *        <name>Newfoundland and Labrador</name>
+ *        <pst>10.0</pst>
+ *        <type>HST</type>
+ *      </tax>
+ *      <tax>
+ *        <code>NS</code>
+ *        <gst>5.0</gst>
+ *        <name>Nova Scotia</name>
+ *        <pst>10.0</pst>
+ *        <type>HST</type>
+ *      </tax>
+ *      <tax>
+ *        <code>PE</code>
+ *        <gst>5.0</gst>
+ *        <name>Prince Edward Island</name>
+ *        <pst>10.0</pst>
+ *        <type>HST</type>
+ *      </tax>
+ *      <tax>
+ *        <code>QC</code>
+ *        <gst>5.0</gst>
+ *        <name>Québec</name>
+ *        <pst>9.975000000000001</pst>
+ *        <type>QST+GST</type>
+ *      </tax>
+ *    </taxes>
+ *
+ *    Disconnected from database.
+ *
+ */
+
 public class ToXMLCollectionExample {
   private static PrintStream log = System.out;
   public static void main(String[] args) {

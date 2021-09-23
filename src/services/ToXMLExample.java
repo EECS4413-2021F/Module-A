@@ -14,6 +14,32 @@ import javax.xml.bind.Marshaller;
 import services.model.TaxBean;
 
 
+/**
+ * An example for serializing the retrieved database
+ * records as a XML document. Returns a single province Tax record
+ * that matches the given 2-letter province code.
+ *
+ * Usage from command-line:
+ * 
+ *    java ToXMLExample <code>
+ * 
+ * Example:
+ * 
+ *    $ java ToXMLExample ON
+ *    Connected to database: jdbc:sqlite:/cs/home/vwchu/4413/pkg/sqlite/Models_R_US.db
+ *    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+ *    <tax>
+ *      <code>ON</code>
+ *      <gst>5.0</gst>
+ *      <name>Ontario</name>
+ *      <pst>8.0</pst>
+ *      <type>HST</type>
+ *    </tax>
+ *
+ *    Disconnected from database.
+ *
+ */
+
 public class ToXMLExample {
   private static PrintStream log = System.out;
   public static void main(String[] args) {

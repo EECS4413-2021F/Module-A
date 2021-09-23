@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
@@ -14,6 +15,109 @@ import java.util.StringTokenizer;
 
 import com.google.gson.Gson;
 
+
+/**
+ * Example HTTP Server.
+ * 
+ * Supports GET and HEAD requests.
+ * Takes a GET and returns a HTTP response to the following endpoints:
+ * 
+ * GET / (root)   Response with the message: "Hello! Welcome to this Server.".
+ * GET /gettime   Response with the current date and time on the server.
+ * GET /headers   Response with the request headers as a JSON object.
+ * GET /qs        Response with the request query-string as a JSON object.
+ * 
+ * If the request is a HEAD request, returns the same response without the content.
+ * If the request is not a GET or HEAD request, returns 501 NOT IMPLEMENTED response.
+ * If the endpoint does not match one of the above, returns 404 NOT FOUND.
+ * 
+ * Examples:
+ * 
+ *  $ telnet 130.63.96.85 36430
+ *    > GET / HTTP/1.1
+ *    >
+ *    HTTP/1.1 200 OK
+ *    Server: Java HTTP Server : 1.0
+ *    Date: Thu Sep 23 15:12:43 EDT 2021
+ *    Content-type: text/plain
+ *    Content-length: 30
+ *    
+ *    Hello! Welcome to this Server.
+ *  
+ *  $ telnet 130.63.96.85 36430
+ *    > GET /gettime HTTP/1.1
+ *    >
+ *    HTTP/1.1 200 OK
+ *    Server: Java HTTP Server : 1.0
+ *    Date: Thu Sep 23 15:40:29 EDT 2021
+ *    Content-type: text/plain
+ *    Content-length: 28
+ *
+ *    Thu Sep 23 15:40:29 EDT 2021
+ * 
+ *  $ telnet 130.63.96.85 36430
+ *    > GET /qs?key1=value1&key2=value%20two&key3=value%5Cthree HTTP/1.1
+ *    HTTP/1.1 200 OK
+ *    Server: Java HTTP Server : 1.0
+ *    Date: Thu Sep 23 15:29:54 EDT 2021
+ *    Content-type: application/json
+ *    Content-length: 58
+ *
+ *    {"key1":"value1","key2":"value two","key3":"value\\three"}
+ * 
+ *  $ telnet 130.63.96.85 36430
+ *    > GET /headers HTTP/1.1
+ *    > Host: 130.63.96.85:42507
+ *    > Connection: keep-alive
+ *    > User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+ *    > Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*\/*;q=0.8
+ *    > Accept-Encoding: gzip, deflate
+ *    > Accept-Language: en-US,en;q=0.5
+ *    > Upgrade-Insecure-Requests: 1
+ *    > DNT 1
+ *    >
+ *    HTTP/1.1 200 OK
+ *    Server: Java HTTP Server : 1.0
+ *    Date: Thu Sep 23 15:36:47 EDT 2021
+ *    Content-type: application/json
+ *    Content-length: 351
+ *
+ *    {"Accept":"text/html,application/xhtml+xml,application/xml;q\u003d0.9,image/webp,*\/*;
+ *    q\u003d0.8","Upgrade-Insecure-Requests":"1","Connection":"keep-alive",
+ *    "User-Agent":"Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0",
+ *    "Host":"130.63.96.85:42507","Accept-Encoding":"gzip, deflate",
+ *    "Accept-Language":"en-US,en;q\u003d0.5","DNT":"1"}
+ *
+ *  $ telnet 130.63.96.85 36430
+ *    > GET /doesnotexist HTTP/1.1
+ *    HTTP/1.1 404 NOT FOUND
+ *    Server: Java HTTP Server : 1.0
+ *    Date: Thu Sep 23 17:01:59 EDT 2021
+ *    Content-type: text/plain
+ *    Content-length: 9
+ *    
+ *    NOT FOUND
+ *
+ *  $ telnet 130.63.96.85 36430
+ *    > POST / HTTP/1.1
+ *    POST / HTTP/1.1
+ *    HTTP/1.1 501 NOT IMPLEMENTED
+ *    Server: Java HTTP Server : 1.0
+ *    Date: Thu Sep 23 17:02:52 EDT 2021
+ *    Content-type: text/plain
+ *    Content-length: 15
+ *
+ *  $ telnet 130.63.96.85 36430
+ *    > GET / HTTP/2.0
+ *    HTTP/1.1 505 HTTP VERSION NOT SUPPORTED
+ *    Server: Java HTTP Server : 1.0
+ *    Date: Thu Sep 23 17:04:07 EDT 2021
+ *    Content-type: text/plain
+ *    Content-length: 26
+ *    
+ *    HTTP VERSION NOT SUPPORTED
+ *
+ */
 public class HTTPServer extends Thread {
   private static PrintStream log = System.out;
   private static final Map<Integer, String> httpResponseCodes = new HashMap<>();
@@ -73,14 +177,14 @@ public class HTTPServer extends Thread {
     res.println(); // blank line between headers and content, very important !
   }
 
-  private String getQueryStrings(String qs) {
+  private String getQueryStrings(String qs) throws Exception {
     Map<String, String> queries = new HashMap<>();
     String[] fields = qs.split("&");
 
     for (String field : fields) {
-      String[] pairs = field.split("=");
+      String[] pairs = field.split("=", 2);
       if (pairs.length == 2) {
-        queries.put(pairs[0], pairs[1]);
+        queries.put(pairs[0], URLDecoder.decode(pairs[1], "UTF-8"));
       }
     }
 
@@ -93,7 +197,7 @@ public class HTTPServer extends Thread {
     HashMap<String, String> headers = new HashMap<String, String>();
 
     for (String header : headerLines) {
-      keyvalue = header.split(":");
+      keyvalue = header.split(":", 2);
       headers.put(keyvalue[0], keyvalue[1].trim());
     }
 
@@ -113,16 +217,18 @@ public class HTTPServer extends Thread {
       String request        = req.nextLine();
       StringTokenizer parse = new StringTokenizer(request);
       String method         = parse.nextToken().toUpperCase(); // The HTTP method requested
-      String endpoint       = parse.nextToken().toLowerCase(); // The endpoint.
+      String endpoint       = parse.nextToken().toLowerCase(); // The endpoint / URL
+      String version        = parse.nextToken().toUpperCase(); // The HTTP version
 
       int status;
       String response    = "";
       String contentType = "text/plain";
 
       try {
-        // we support only GET and HEAD methods, we check
-        if (!method.equals("GET") && !method.equals("HEAD")) {
+        if (!method.equals("GET") && !method.equals("HEAD")) { // only support GET + HEAD methods
           status = 501;
+        } else if (!version.equals("HTTP/1.1")) { // only support HTTP version 1.1
+          status = 505;
         } else {
           status = 200;
   

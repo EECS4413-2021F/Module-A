@@ -15,6 +15,28 @@ import services.model.TaxBean;
 import services.model.TaxCollection;
 
 
+/**
+ * An example for serializing the retrieved database
+ * records as a JSON object. Returns a list of the provinces
+ * that have PST greater than the given number.
+ * 
+ * Usage from command-line:
+ * 
+ *    java ToJSONExample <pst>
+ *
+ * Example:
+ * 
+ *    $ java ToJSONExample 9.0
+ *    Connected to database: jdbc:sqlite:/cs/home/vwchu/4413/pkg/sqlite/Models_R_US.db
+ *    {"taxes":[{"name":"New-Brunswick","code":"NB","type":"HST","pst":10.0,"gst":5.0},
+ *    {"name":"Newfoundland and Labrador","code":"NL","type":"HST","pst":10.0,"gst":5.0},
+ *    {"name":"Nova Scotia","code":"NS","type":"HST","pst":10.0,"gst":5.0},
+ *    {"name":"Prince Edward Island","code":"PE","type":"HST","pst":10.0,"gst":5.0},
+ *    {"name":"Québec","code":"QC","type":"QST+GST","pst":9.975000000000001,"gst":5.0}]}
+ *    Disconnected from database.
+ *
+ */
+
 public class ToJSONExample {
   private static PrintStream log = System.out;
   public static void main(String[] args) {
