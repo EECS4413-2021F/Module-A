@@ -5,9 +5,12 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +20,14 @@ public class HTTPCalcService extends Thread {
 
   private static final PrintStream log = System.out;
   private static final Map<Integer, String> httpResponseCodes = new HashMap<>();
-  private static final Pattern pattern = Pattern.compile("^[+-]?([0-9]+)([.][0-9]+)?(E[+-]?[0-9]+)?$");
+  private static final Pattern isDouble = Pattern.compile("^[+-]?([0-9]+)([.][0-9]+)?(E[+-]?[0-9]+)?$");
+  private static final String[] endpoints = {
+    "/add",
+    "/subtract",
+    "/multiply",
+    "/divide",
+    "/power"
+  };
 
   static {
     httpResponseCodes.put(100, "HTTP CONTINUE");
@@ -66,15 +76,27 @@ public class HTTPCalcService extends Thread {
   }
 
   private void sendHeaders(PrintStream res, int code, String contentType, String response) {
+    sendHeaders(res, code, contentType, response, new String[]{});
+  }
+  private void sendHeaders(PrintStream res, int code, String contentType, String response, String[] headers) {
     // send HTTP Headers
     res.printf("HTTP/1.1 %d %s\n", code, httpResponseCodes.get(code));
     res.println("Server: Java HTTP Server : 1.0");
     res.println("Date: " + new Date());
     res.println("Content-type: " + contentType);
     res.println("Content-length: " + response.getBytes().length);
+    Arrays.stream(headers).forEach(h -> res.println(h));
     res.println(); // blank line between headers and content, very important !
   }
 
+  private String[] getComponents(String resourcePath) {
+    if (!resourcePath.contains("?")) {
+      return new String[]{ resourcePath, "" };
+    } else {
+      return resourcePath.split("\\?", 2);
+    }
+  }
+  
   private Map<String, String> getQueryStrings(String qs) throws Exception {
     Map<String, String> queries = new HashMap<>();
     String[] fields = qs.split("&");
@@ -102,6 +124,8 @@ public class HTTPCalcService extends Thread {
       String method, resource, version;
       String response = "";
 
+      List<String> headers = new ArrayList<>();
+      
       try (Scanner parse = new Scanner(request)) {
         method   = parse.next();
         resource = parse.next();
@@ -115,13 +139,20 @@ public class HTTPCalcService extends Thread {
           status = 501;
         } else if (!version.equals("HTTP/1.1")) {
           status = 505;
+        } else if (Arrays.stream(endpoints).anyMatch((s) -> resource.startsWith(s + "?"))) {
+          String[] components = getComponents(resource);
+          String   location   = String.format("/calc?op=%s&%s", components[0].substring(1), components[1]);
+
+          status = 301;
+          headers.add("Location: " + location); // redirection
+
         } else if (resource.startsWith("/calc?")) {
           Map<String, String> qs = getQueryStrings(resource.substring(resource.indexOf('?') + 1));
 
           if (qs.containsKey("op") && qs.containsKey("a") && qs.containsKey("b")) {
             String  op = qs.get("op");
-            Matcher matcherA = pattern.matcher(qs.get("a"));
-            Matcher matcherB = pattern.matcher(qs.get("b"));
+            Matcher matcherA = isDouble.matcher(qs.get("a"));
+            Matcher matcherB = isDouble.matcher(qs.get("b"));
 
             if (matcherA.find() && matcherB.find()) {
               double a = Double.parseDouble(qs.get("a"));
@@ -141,21 +172,28 @@ public class HTTPCalcService extends Thread {
             }
           }
 
-          if (response.isEmpty()) {
+          if (status == 200 && response.isEmpty()) {
             status = 400;
           }
         } else {
           status = 404;
         }
       } catch (Exception e) {
+        log.println(e);
+        e.printStackTrace(log);
         status = 500;
       }
 
-      if (status != 200) {
+      if (status != 200 && response.isEmpty()) {
         response = httpResponseCodes.get(status);
       }
 
-      sendHeaders(res, status, "text/plain", response);
+      if (headers.size() > 0) {
+        sendHeaders(res, status, "text/plain", response, headers.toArray(new String[]{}));
+      } else {
+        sendHeaders(res, status, "text/plain", response);
+      }
+
       res.println(response);
       res.flush(); // flush character output stream buffer      
     } catch (Exception e) {

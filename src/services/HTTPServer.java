@@ -181,7 +181,7 @@ public class HTTPServer extends Thread {
     if (!resourcePath.contains("?")) {
       return new String[]{ resourcePath, "" };
     } else {
-      return resourcePath.split("?", 2);
+      return resourcePath.split("\\?", 2);
     }
   }
 
