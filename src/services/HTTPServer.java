@@ -18,21 +18,21 @@ import com.google.gson.Gson;
 
 /**
  * Example HTTP Server.
- * 
+ *
  * Supports GET and HEAD requests.
  * Takes a GET and returns a HTTP response to the following endpoints:
- * 
+ *
  * GET / (root)   Response with the message: "Hello! Welcome to this Server.".
  * GET /gettime   Response with the current date and time on the server.
  * GET /headers   Response with the request headers as a JSON object.
  * GET /qs        Response with the request query-string as a JSON object.
- * 
+ *
  * If the request is a HEAD request, returns the same response without the content.
  * If the request is not a GET or HEAD request, returns 501 NOT IMPLEMENTED response.
  * If the endpoint does not match one of the above, returns 404 NOT FOUND.
- * 
+ *
  * Examples:
- * 
+ *
  *  $ telnet 130.63.96.85 36430
  *    > GET / HTTP/1.1
  *    >
@@ -41,9 +41,9 @@ import com.google.gson.Gson;
  *    Date: Thu Sep 23 15:12:43 EDT 2021
  *    Content-type: text/plain
  *    Content-length: 30
- *    
+ *
  *    Hello! Welcome to this Server.
- *  
+ *
  *  $ telnet 130.63.96.85 36430
  *    > GET /gettime HTTP/1.1
  *    >
@@ -54,7 +54,7 @@ import com.google.gson.Gson;
  *    Content-length: 28
  *
  *    Thu Sep 23 15:40:29 EDT 2021
- * 
+ *
  *  $ telnet 130.63.96.85 36430
  *    > GET /qs?key1=value1&key2=value%20two&key3=value%5Cthree HTTP/1.1
  *    HTTP/1.1 200 OK
@@ -64,7 +64,7 @@ import com.google.gson.Gson;
  *    Content-length: 58
  *
  *    {"key1":"value1","key2":"value two","key3":"value\\three"}
- * 
+ *
  *  $ telnet 130.63.96.85 36430
  *    > GET /headers HTTP/1.1
  *    > Host: 130.63.96.85:42507
@@ -95,7 +95,7 @@ import com.google.gson.Gson;
  *    Date: Thu Sep 23 17:01:59 EDT 2021
  *    Content-type: text/plain
  *    Content-length: 9
- *    
+ *
  *    NOT FOUND
  *
  *  $ telnet 130.63.96.85 36430
@@ -114,7 +114,7 @@ import com.google.gson.Gson;
  *    Date: Thu Sep 23 17:04:07 EDT 2021
  *    Content-type: text/plain
  *    Content-length: 26
- *    
+ *
  *    HTTP VERSION NOT SUPPORTED
  *
  */
@@ -177,7 +177,15 @@ public class HTTPServer extends Thread {
     res.println(); // blank line between headers and content, very important !
   }
 
-  private String getQueryStrings(String qs) throws Exception {
+  private String[] getComponents(String resourcePath) {
+    if (!endpoint.contains("?")) {
+      return new String[]{ resourcePath, "" };
+    } else {
+      return resourcePath.split("?", 2);
+    }
+  }
+
+  private Map<String, String> getQueryStrings(String qs) throws Exception {
     Map<String, String> queries = new HashMap<>();
     String[] fields = qs.split("&");
 
@@ -187,28 +195,24 @@ public class HTTPServer extends Thread {
         queries.put(pairs[0], URLDecoder.decode(pairs[1], "UTF-8"));
       }
     }
-
-    Gson gson = new Gson();
-    return gson.toJson(queries);
+    return queries;
   }
 
-  private String getHeaders(List<String> headerLines) {
+  private Map<String, String> getHeaders(List<String> headerLines) {
     String[] keyvalue;
-    HashMap<String, String> headers = new HashMap<String, String>();
+    Map<String, String> headers = new HashMap<String, String>();
 
     for (String header : headerLines) {
       keyvalue = header.split(":", 2);
       headers.put(keyvalue[0], keyvalue[1].trim());
     }
-
-    Gson gson = new Gson();
-    return gson.toJson(headers);
+    return headers;
   }
 
   public void run() {
     final String clientAddress = String.format("%s:%d", client.getInetAddress(), client.getPort());
     log.printf("Connected to %s\n", clientAddress);
-    
+
     try (
       Socket client   = this.client; // Makes sure that client is closed at end of try-statement.
       Scanner req     = new Scanner(client.getInputStream());
@@ -231,33 +235,30 @@ public class HTTPServer extends Thread {
           status = 505;
         } else {
           status = 200;
-  
+
           if (endpoint.equals("/")) {
             response = "Hello! Welcome to this Server.";
-  
+
           } else if (endpoint.equals("/gettime")) {
             response = (new Date()).toString();
-  
+
           } else if (endpoint.startsWith("/qs?")) {
-            String qs   = endpoint.substring(endpoint.indexOf('?') + 1); // The query string
-            endpoint    = endpoint.substring(0, endpoint.indexOf('?'));
+            String[] components = getComponents(endpoint);
             contentType = "application/json";
-            response    = getQueryStrings(qs);
-  
+            response    = (new Gson()).toJson(getQueryStrings(components[1]));
+
           } else if (endpoint.equals("/headers")) {
             // Read the request headers
             String buff;
             List<String> headers = new ArrayList<>();
-
             while (req.hasNextLine()) {
               buff = req.nextLine();
               if (buff.isEmpty()) break;
               headers.add(buff);
             }
-  
             contentType = "application/json";
-            response    = getHeaders(headers);
-  
+            response    = (new Gson()).toJson(getHeaders(headers));
+
           } else {
             status = 404;
           }
