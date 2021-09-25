@@ -16,12 +16,54 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
+/**
+ * HTTP Service example.
+ * 
+ * Implements a simple calculator over HTTP.
+ * Supports the following request:
+ * 
+ *    GET /calc?op=<op>&a=<number>&b=<number>
+ * 
+ * where <op> is one of:
+ *    - add
+ *    - subtract
+ *    - multiply
+ *    - divide
+ *    - power
+ * 
+ * and `a` and `b` are real numbers for the service to calculate:
+ *    - a + b
+ *    - a - b
+ *    - a * b
+ *    - a / b
+ *    - a ^ b
+ *
+ * You can also request the following:
+ * 
+ *    GET /add?a=<number>&b=<number>
+ *    GET /subtract?a=<number>&b=<number>
+ *    GET /multiply?a=<number>&b=<number>
+ *    GET /divide?a=<number>&b=<number>
+ *    GET /power?a=<number>&b=<number>
+ *
+ * The server redirects the web browser to:
+ * 
+ *    GET /calc?op=add&a=<number>&b=<number>
+ *    GET /calc?op=subtract&a=<number>&b=<number>
+ *    GET /calc?op=multiply&a=<number>&b=<number>
+ *    GET /calc?op=divide&a=<number>&b=<number>
+ *    GET /calc?op=power&a=<number>&b=<number>
+ *
+ * via a HTTP 301 response code.
+ *
+ */
+
 public class HTTPCalcService extends Thread {
 
   private static final PrintStream log = System.out;
   private static final Map<Integer, String> httpResponseCodes = new HashMap<>();
   private static final Pattern isDouble = Pattern.compile("^[+-]?([0-9]+)([.][0-9]+)?(E[+-]?[0-9]+)?$");
-  private static final String[] endpoints = {
+  private static final String[] redirectedEndpoints = {
     "/add",
     "/subtract",
     "/multiply",
@@ -139,7 +181,7 @@ public class HTTPCalcService extends Thread {
           status = 501;
         } else if (!version.equals("HTTP/1.1")) {
           status = 505;
-        } else if (Arrays.stream(endpoints).anyMatch((s) -> resource.startsWith(s + "?"))) {
+        } else if (Arrays.stream(redirectedEndpoints).anyMatch((s) -> resource.startsWith(s + "?"))) {
           String[] components = getComponents(resource);
           String   location   = String.format("/calc?op=%s&%s", components[0].substring(1), components[1]);
 
