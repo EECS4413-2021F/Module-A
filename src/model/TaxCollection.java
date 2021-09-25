@@ -1,4 +1,4 @@
-package services.model;
+package model;
 
 import java.io.Serializable;
 import java.util.List;
@@ -32,5 +32,5 @@ public class TaxCollection implements Serializable {
       output += tax.toString();
     }
     return output;
-  }  
+  }
 }

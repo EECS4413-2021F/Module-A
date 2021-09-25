@@ -8,19 +8,19 @@ import java.util.Scanner;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
-import services.model.TaxBean;
-import services.model.TaxCollection;
+import model.TaxBean;
+import model.TaxCollection;
 
 
 /**
  * An example for de-serializing the given XML into a Java Object.
- * 
+ *
  * Usage from command-line:
- * 
+ *
  *    java FromXMLExample <taxes|tax>
  *
  * Examples:
- * 
+ *
  *    $ java FromXMLExample tax
  *    > <tax>
  *    >  <code>ON</code>
@@ -69,7 +69,7 @@ public class FromXMLExample {
     String type = args[0];
     String input = "";
     String line;
-    
+
     try (Scanner in = new Scanner(System.in)) {
       while (in.hasNextLine()) {
         line = in.nextLine();

@@ -13,21 +13,21 @@ import java.util.ArrayList;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import services.model.TaxBean;
-import services.model.TaxCollection;
+import model.TaxBean;
+import model.TaxCollection;
 
 
 /**
  * An example for serializing the retrieved database
  * records as a XML document. Returns a list of the provinces
  * that have PST greater than the given number.
- * 
+ *
  * Usage from command-line:
- * 
+ *
  *    java ToXMLCollectionExample <pst>
  *
  * Example:
- * 
+ *
  *    $ java ToXMLCollectionExample 9.0
  *    Connected to database: jdbc:sqlite:/cs/home/vwchu/4413/pkg/sqlite/Models_R_US.db
  *    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>

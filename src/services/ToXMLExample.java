@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import services.model.TaxBean;
+import model.TaxBean;
 
 
 /**
