@@ -5,18 +5,18 @@ import java.util.Scanner;
 
 import com.google.gson.Gson;
 
-import services.model.TaxCollection;
+import model.TaxCollection;
 
 
 /**
  * An example for de-serializing the given JSON into a Java Object.
- * 
+ *
  * Usage from command-line:
- * 
+ *
  *    java FromJSONExample
  *
  * Example:
- * 
+ *
  *    $ java FromJSONExample
  *    > {"taxes":[{"name":"New-Brunswick","code":"NB","type":"HST","pst":10.0,"gst":5.0},
  *    > {"name":"Newfoundland and Labrador","code":"NL","type":"HST","pst":10.0,"gst":5.0},
@@ -61,7 +61,7 @@ public class FromJSONExample {
       }
 
       Gson gson = new Gson();
-      TaxCollection collection = (TaxCollection)gson.fromJson(input, TaxCollection.class);      
+      TaxCollection collection = (TaxCollection)gson.fromJson(input, TaxCollection.class);
       log.println(collection);
     } catch (Exception e) {
       log.println(e);

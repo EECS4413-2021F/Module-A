@@ -19,24 +19,24 @@ import javax.xml.bind.Marshaller;
 
 import com.google.gson.Gson;
 
-import services.model.TaxBean;
-import services.model.TaxCollection;
+import model.TaxBean;
+import model.TaxCollection;
 
 
 /**
  * An example microservice for retrieve the Tax information
  * from the Tax table in the database based on the requested
  * information.
- * 
+ *
  * This service takes 2 request types: 'code_eq' and 'pst_gt'.
  * When 'code_eq', the service takes a two letter province code and
  * returns a single Tax record. When 'pst_gt', it takes a double, and
  * returns a list of Tax records, all of which have PST greater than the
  * given number. A third parameter specifies the response format,
  * either 'xml' or 'json'.
- * 
+ *
  * Usage from telnet, send:
- * 
+ *
  *  - code_eq <code> xml
  *  - code_eq <code> json
  *  - pst_gt <number> xml
@@ -54,11 +54,11 @@ import services.model.TaxCollection;
  *        <pst>8.0</pst>
  *        <type>HST</type>
  *      </tax>
- * 
+ *
  *    $ telnet 130.63.96.85 44760
  *      > code_eq ON json
  *      {"name":"Ontario","code":"ON","type":"HST","pst":8.0,"gst":5.0}
- * 
+ *
  *    $ telnet 130.63.96.85 44760
  *      > pst_gt 9.0 xml
  *      <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -99,7 +99,7 @@ import services.model.TaxCollection;
  *              <type>QST+GST</type>
  *          </tax>
  *      </taxes>
- * 
+ *
  *    $ telnet 130.63.96.85 44760
  *      > pst_gt 9.0 json
  *      {"taxes":[{"name":"New-Brunswick","code":"NB","type":"HST","pst":10.0,"gst":5.0},

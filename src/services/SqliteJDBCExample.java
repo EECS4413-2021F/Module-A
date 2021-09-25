@@ -7,7 +7,7 @@ import java.sql.PreparedStatement; // import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 
-import services.model.TaxBean;
+import model.TaxBean;
 
 
 /**
@@ -16,11 +16,11 @@ import services.model.TaxBean;
  * that matches the given 2-letter province code and prints it.
  *
  * Usage from command-line:
- * 
+ *
  *    java SqliteJDBCExample <code>
  *
  * Example:
- * 
+ *
  *    $ java SqliteJDBCExample ON
  *    Connected to database: jdbc:sqlite:/cs/home/vwchu/4413/pkg/sqlite/Models_R_US.db
  *    Taxes in Ontario (ON):
@@ -29,7 +29,7 @@ import services.model.TaxBean;
  *    - PST  = 8.00%
  *
  *    Disconnected from database.
- * 
+ *
  */
 
 public class SqliteJDBCExample {
