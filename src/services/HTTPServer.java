@@ -178,7 +178,7 @@ public class HTTPServer extends Thread {
   }
 
   private String[] getComponents(String resourcePath) {
-    if (!endpoint.contains("?")) {
+    if (!resourcePath.contains("?")) {
       return new String[]{ resourcePath, "" };
     } else {
       return resourcePath.split("?", 2);
