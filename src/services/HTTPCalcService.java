@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  *    - subtract
  *    - multiply
  *    - divide
- *    - power
+ *    - exponent
  * 
  * and `a` and `b` are real numbers for the service to calculate:
  *    - a + b
@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
  *    GET /subtract?a=<number>&b=<number>
  *    GET /multiply?a=<number>&b=<number>
  *    GET /divide?a=<number>&b=<number>
- *    GET /power?a=<number>&b=<number>
+ *    GET /exponent?a=<number>&b=<number>
  *
  * The server redirects the web browser to:
  * 
@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
  *    GET /calc?op=subtract&a=<number>&b=<number>
  *    GET /calc?op=multiply&a=<number>&b=<number>
  *    GET /calc?op=divide&a=<number>&b=<number>
- *    GET /calc?op=power&a=<number>&b=<number>
+ *    GET /calc?op=exponent&a=<number>&b=<number>
  *
  * via a HTTP 301 response code.
  *
@@ -68,7 +68,7 @@ public class HTTPCalcService extends Thread {
     "/subtract",
     "/multiply",
     "/divide",
-    "/power"
+    "/exponent"
   };
 
   static {
@@ -208,7 +208,7 @@ public class HTTPCalcService extends Thread {
                 response = "" + (a * b);
               } else if (op.equals("divide")) {
                 response = "" + (a / b);
-              } else if (op.equals("power")) {
+              } else if (op.equals("exponent")) {
                 response = "" + Math.pow(a, b);
               }
             }
