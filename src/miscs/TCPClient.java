@@ -1,4 +1,4 @@
-package services;
+package miscs;
 
 import java.net.*;
 import java.util.Scanner;
@@ -42,62 +42,10 @@ import java.io.PrintStream;
  *    Disconnected from /130.63.96.34:59150
  *
  */
-
 public class TCPClient {
   private static PrintStream log = System.out;
-
-  private static boolean isHostAddress(String address) {
-    if (address.isEmpty()) {
-      return false;
-    }
-    try {
-      Object res = InetAddress.getByName(address);
-      return res instanceof Inet4Address || res instanceof Inet6Address;
-    } catch (final UnknownHostException exception) {
-      return false;
-    }
-  }
-
-  private static boolean isInteger(String integer) { return isInteger(integer, 10); }
-  private static boolean isInteger(String integer, int radix) {
-    try (Scanner sc = new Scanner(integer.trim())) {
-      if(!sc.hasNextInt(radix)) return false;
-      sc.nextInt(radix);
-      return !sc.hasNext();
-    }
-  }
-
-  private static boolean inPortRange(int port) {
-    return 0 <= port && port < 65536;
-  }
-
-  private static void abort(int exitCode, String message) {
-    log.println(message);
-    System.exit(exitCode);
-  }
-
-  private static void validateArgs(String[] args) {
-    String[] messages = {
-      "ERROR: Not enough arguments. Usage: <host> <port>. Expected 2 args, got %d\n",
-      "ERROR: Fail to parse host as an IP address or hostname, given '%s'.\n",
-      "ERROR: Fail to parse port as an integer, given '%s'.\n",
-      "ERROR: Port number out of range, expected integer between 0 and 65536, given %d.\n",
-    };
-
-    if (args.length < 2)         abort(1, String.format(messages[0], args.length));
-    if (!isHostAddress(args[0])) abort(2, String.format(messages[1], args[0]));
-    if (!isInteger(args[1]))     abort(3, String.format(messages[2], args[1]));
-
-    int port = Integer.parseInt(args[1]);
-    if (!inPortRange(port)) {
-      abort(4, String.format(messages[3], port));
-    }
-    return;
-  }
-
   public static void main(String[] args) throws Exception {
-    validateArgs(args);
-
+    // Normally, I would validate my arguments first, but to keep this example succinct, I won't.
     try (
       Socket client   = new Socket(args[0], Integer.parseInt(args[1]));
       PrintStream req = new PrintStream(client.getOutputStream(), true);
